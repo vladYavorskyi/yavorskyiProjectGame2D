@@ -23,6 +23,7 @@ public class TowerBuildController : MonoBehaviour
     [SerializeField] private Vector2 gridOrigin = new(-7f, -4f);
     [SerializeField] private Vector2Int gridSize = new(14, 8);
     [SerializeField] private float cellSize = 1f;
+    [SerializeField] private bool allowBuildWithoutSpawner;
 
     private readonly HashSet<Vector2Int> occupiedCells = new();
     private readonly HashSet<Vector2Int> blockedPathCells = new();
@@ -34,6 +35,11 @@ public class TowerBuildController : MonoBehaviour
         {
             mainCamera = Camera.main;
         }
+
+        if (enemySpawner == null)
+        {
+            enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        }
     }
 
     private void Start()
@@ -43,6 +49,11 @@ public class TowerBuildController : MonoBehaviour
 
     private void Update()
     {
+        if (!CanBuildInCurrentPhase())
+        {
+            return;
+        }
+
         HandleSelectionInput();
 
         if (blockBuildUntilMouseRelease)
@@ -96,55 +107,119 @@ public class TowerBuildController : MonoBehaviour
 
     private void TryBuildFromMouse()
     {
-        if (enemySpawner != null && enemySpawner.CurrentPhase != RoundPhase.Preparation)
+        Vector3 mousePosition = GetMouseScreenPosition();
+        TryBuildAtScreenPosition(mousePosition, selectedOptionIndex);
+    }
+
+    public bool CanBuildInCurrentPhase()
+    {
+        if (enemySpawner == null)
         {
+            return allowBuildWithoutSpawner;
+        }
+
+        if (!enemySpawner.IsGameStarted || enemySpawner.IsGameFinished)
+        {
+            return false;
+        }
+
+        return enemySpawner.CurrentPhase == RoundPhase.Preparation;
+    }
+
+    public int GetSelectedOptionIndex()
+    {
+        return selectedOptionIndex;
+    }
+
+    public int GetBuildOptionCount()
+    {
+        return buildOptions != null ? buildOptions.Count : 0;
+    }
+
+    public TowerBuildOption GetBuildOption(int index)
+    {
+        if (buildOptions == null || index < 0 || index >= buildOptions.Count)
+        {
+            return null;
+        }
+
+        return buildOptions[index];
+    }
+
+    public void SelectBuildOption(int index)
+    {
+        if (buildOptions == null || buildOptions.Count == 0)
+        {
+            selectedOptionIndex = 0;
             return;
+        }
+
+        selectedOptionIndex = Mathf.Clamp(index, 0, buildOptions.Count - 1);
+    }
+
+    public bool CanAffordOption(int index)
+    {
+        if (economy == null)
+        {
+            return false;
+        }
+
+        TowerBuildOption option = GetBuildOption(index);
+        return option != null && option.towerData != null && economy.CurrentGold >= option.towerData.cost;
+    }
+
+    public bool TryBuildAtScreenPosition(Vector2 screenPosition, int optionIndex)
+    {
+        if (!CanBuildInCurrentPhase())
+        {
+            return false;
         }
 
         if (mainCamera == null || economy == null)
         {
             Debug.LogError("TowerBuildController: Assign mainCamera and economy.");
-            return;
+            return false;
         }
 
-        TowerBuildOption option = GetSelectedOption();
+        TowerBuildOption option = GetBuildOption(optionIndex);
         if (option == null || option.towerData == null || option.towerPrefab == null)
         {
             Debug.LogError("TowerBuildController: Selected build option is invalid.");
-            return;
+            return false;
         }
 
-        Vector3 mousePosition = GetMouseScreenPosition();
-        Vector3 world = mainCamera.ScreenToWorldPoint(mousePosition);
+        Vector3 world = mainCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
         world.z = 0f;
 
         Vector2Int cell = WorldToCell(world);
         if (!IsInBounds(cell))
         {
-            return;
+            return false;
         }
 
         if (blockedPathCells.Contains(cell))
         {
             Debug.Log("Cannot build on path.");
-            return;
+            return false;
         }
 
         if (occupiedCells.Contains(cell))
         {
             Debug.Log("Cell is already occupied.");
-            return;
+            return false;
         }
 
         if (!economy.TrySpendGold(option.towerData.cost))
         {
             Debug.Log("Not enough gold.");
-            return;
+            return false;
         }
 
         Vector3 buildPosition = CellToWorld(cell);
         Instantiate(option.towerPrefab, buildPosition, Quaternion.identity);
         occupiedCells.Add(cell);
+        selectedOptionIndex = Mathf.Clamp(optionIndex, 0, Mathf.Max(0, buildOptions.Count - 1));
+        return true;
     }
 
     private TowerBuildOption GetSelectedOption()

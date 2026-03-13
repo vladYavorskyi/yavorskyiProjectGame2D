@@ -21,6 +21,8 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private BaseHealth baseHealth;
     [SerializeField] private GameEconomy economy;
     [SerializeField] private int totalRounds = 10;
+    [SerializeField] private int orcUnlockRound = 3;
+    [SerializeField] private int ghostUnlockRound = 5;
     [SerializeField] private int startAttackBudget = 200;
     [SerializeField] private int attackBudgetGrowthPerRound = 35;
     [SerializeField] private float earlyRoundBudgetScale = 0.6f;
@@ -80,6 +82,8 @@ public class EnemySpawner : MonoBehaviour
     public void ApplyProgressiveWavePreset()
     {
         totalRounds = 10;
+        orcUnlockRound = 3;
+        ghostUnlockRound = 5;
         startAttackBudget = 200;
         attackBudgetGrowthPerRound = 35;
         earlyRoundBudgetScale = 0.6f;
@@ -129,6 +133,7 @@ public class EnemySpawner : MonoBehaviour
 
             SetPhase(RoundPhase.Battle);
             List<EnemyData> wave = GenerateWave(CurrentAttackBudget);
+            LogWaveComposition(wave);
             yield return SpawnWave(wave);
 
             while (EnemyMover.ActiveEnemies.Count > 0 && baseHealth.CurrentHealth > 0 && !IsGameFinished)
@@ -174,11 +179,14 @@ public class EnemySpawner : MonoBehaviour
     private List<EnemyData> GenerateWave(int budget)
     {
         List<EnemyData> wave = new();
+        EnemyData goblinData = null;
+        EnemyData orcData = null;
+        EnemyData ghostData = null;
 
         int minCost = int.MaxValue;
         foreach (EnemyData enemy in enemyTypes)
         {
-            if (enemy == null)
+            if (enemy == null || !IsEnemyUnlockedForRound(enemy, CurrentRound))
             {
                 continue;
             }
@@ -186,6 +194,19 @@ public class EnemySpawner : MonoBehaviour
             if (enemy.attackCost < minCost)
             {
                 minCost = enemy.attackCost;
+            }
+
+            switch (enemy.enemyType)
+            {
+                case EnemyType.Goblin:
+                    goblinData ??= enemy;
+                    break;
+                case EnemyType.Orc:
+                    orcData ??= enemy;
+                    break;
+                case EnemyType.Ghost:
+                    ghostData ??= enemy;
+                    break;
             }
         }
 
@@ -198,6 +219,25 @@ public class EnemySpawner : MonoBehaviour
             ? Mathf.Clamp01((CurrentRound - 1f) / (totalRounds - 1f))
             : 1f;
         int roundEnemyLimit = GetRoundEnemyLimit();
+
+        // Guarantee visible enemy variety after unlock rounds.
+        if (CurrentRound >= Mathf.Max(1, orcUnlockRound) && orcData != null && budget >= orcData.attackCost && wave.Count < roundEnemyLimit)
+        {
+            wave.Add(orcData);
+            budget -= orcData.attackCost;
+        }
+
+        if (CurrentRound >= Mathf.Max(1, ghostUnlockRound) && ghostData != null && budget >= ghostData.attackCost && wave.Count < roundEnemyLimit)
+        {
+            wave.Add(ghostData);
+            budget -= ghostData.attackCost;
+        }
+
+        if (wave.Count == 0 && goblinData != null && budget >= goblinData.attackCost && wave.Count < roundEnemyLimit)
+        {
+            wave.Add(goblinData);
+            budget -= goblinData.attackCost;
+        }
 
         int safety = 0;
         while (budget >= minCost && wave.Count < roundEnemyLimit && safety < 1000)
@@ -224,7 +264,7 @@ public class EnemySpawner : MonoBehaviour
         for (int i = 0; i < enemyTypes.Count; i++)
         {
             EnemyData candidate = enemyTypes[i];
-            if (candidate == null || candidate.attackCost > budget)
+            if (candidate == null || candidate.attackCost > budget || !IsEnemyUnlockedForRound(candidate, CurrentRound))
             {
                 continue;
             }
@@ -290,6 +330,23 @@ public class EnemySpawner : MonoBehaviour
         return Mathf.Max(0f, weight);
     }
 
+    private bool IsEnemyUnlockedForRound(EnemyData enemy, int round)
+    {
+        if (enemy == null)
+        {
+            return false;
+        }
+
+        int unlockRound = enemy.enemyType switch
+        {
+            EnemyType.Orc => orcUnlockRound,
+            EnemyType.Ghost => ghostUnlockRound,
+            _ => 1
+        };
+
+        return round >= Mathf.Max(1, unlockRound);
+    }
+
     private int GetRoundEnemyLimit()
     {
         int limit = Mathf.RoundToInt(
@@ -307,6 +364,41 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return Mathf.Clamp01((round - 1f) / (totalRounds - 1f));
+    }
+
+    private void LogWaveComposition(List<EnemyData> wave)
+    {
+        if (wave == null)
+        {
+            return;
+        }
+
+        int goblin = 0;
+        int orc = 0;
+        int ghost = 0;
+        for (int i = 0; i < wave.Count; i++)
+        {
+            EnemyData data = wave[i];
+            if (data == null)
+            {
+                continue;
+            }
+
+            switch (data.enemyType)
+            {
+                case EnemyType.Goblin:
+                    goblin++;
+                    break;
+                case EnemyType.Orc:
+                    orc++;
+                    break;
+                case EnemyType.Ghost:
+                    ghost++;
+                    break;
+            }
+        }
+
+        Debug.Log($"Round {CurrentRound} wave => Goblin: {goblin}, Orc: {orc}, Ghost: {ghost}, Total: {wave.Count}");
     }
 
     private IEnumerator SpawnWave(List<EnemyData> wave)

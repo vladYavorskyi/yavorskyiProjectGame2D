@@ -1,12 +1,24 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameResultUIController : MonoBehaviour
 {
     [SerializeField] private EnemySpawner enemySpawner;
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_Text resultText;
+    [SerializeField] private Button restartButton;
+
+    private void Awake()
+    {
+        TryAutoAssignRestartButton();
+        if (restartButton != null)
+        {
+            restartButton.onClick.RemoveListener(RestartLevel);
+            restartButton.onClick.AddListener(RestartLevel);
+        }
+    }
 
     private void OnEnable()
     {
@@ -29,6 +41,14 @@ public class GameResultUIController : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (restartButton != null)
+        {
+            restartButton.onClick.RemoveListener(RestartLevel);
+        }
+    }
+
     private void OnGameFinished(bool defenderWon)
     {
         if (panelRoot != null)
@@ -46,5 +66,35 @@ public class GameResultUIController : MonoBehaviour
     {
         Scene current = SceneManager.GetActiveScene();
         SceneManager.LoadScene(current.name);
+    }
+
+    private void TryAutoAssignRestartButton()
+    {
+        if (restartButton != null || panelRoot == null)
+        {
+            return;
+        }
+
+        Button[] buttons = panelRoot.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button == null)
+            {
+                continue;
+            }
+
+            string objectName = button.gameObject.name;
+            if (!string.IsNullOrEmpty(objectName) && objectName.ToLowerInvariant().Contains("restart"))
+            {
+                restartButton = button;
+                return;
+            }
+        }
+
+        if (buttons.Length > 0)
+        {
+            restartButton = buttons[0];
+        }
     }
 }

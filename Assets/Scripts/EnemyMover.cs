@@ -5,6 +5,11 @@ public class EnemyMover : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 2.5f;
     [SerializeField] private int damageToBase = 1;
+    [Header("Visuals")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Sprite goblinSprite;
+    [SerializeField] private Sprite orcSprite;
+    [SerializeField] private Sprite ghostSprite;
 
     public static readonly List<EnemyMover> ActiveEnemies = new();
 
@@ -25,6 +30,11 @@ public class EnemyMover : MonoBehaviour
     private void Awake()
     {
         Health = GetComponent<EnemyHealth>();
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        }
+
         baseMoveSpeed = moveSpeed;
         currentMoveSpeed = baseMoveSpeed;
     }
@@ -63,6 +73,7 @@ public class EnemyMover : MonoBehaviour
         }
 
         BuildPathDistanceCache(path);
+        ApplyVisualFromData(data);
 
         if (Health != null)
         {
@@ -115,6 +126,39 @@ public class EnemyMover : MonoBehaviour
 
             totalPathLength += Vector3.Distance(prev.position, next.position);
             cumulativePathDistances[i] = totalPathLength;
+        }
+    }
+
+    private void ApplyVisualFromData(EnemyData data)
+    {
+        if (spriteRenderer == null || data == null)
+        {
+            return;
+        }
+
+        switch (data.enemyType)
+        {
+            case EnemyType.Goblin:
+                if (goblinSprite != null)
+                {
+                    spriteRenderer.sprite = goblinSprite;
+                }
+
+                break;
+            case EnemyType.Orc:
+                if (orcSprite != null)
+                {
+                    spriteRenderer.sprite = orcSprite;
+                }
+
+                break;
+            case EnemyType.Ghost:
+                if (ghostSprite != null)
+                {
+                    spriteRenderer.sprite = ghostSprite;
+                }
+
+                break;
         }
     }
 
