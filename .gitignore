@@ -8,6 +8,8 @@
 /[Oo]bj/
 /[Bb]uild/
 /[Bb]uilds/
+/Buildy/
+/Testov/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 *.log
@@ -65,6 +67,8 @@ sysinfo.txt
 
 # Mono auto generated files
 mono_crash.*
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
 
 # Builds
 *.apk
