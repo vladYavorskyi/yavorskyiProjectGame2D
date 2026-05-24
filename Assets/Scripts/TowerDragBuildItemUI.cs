@@ -52,6 +52,10 @@ public class TowerDragBuildItemUI : MonoBehaviour, IBeginDragHandler, IDragHandl
 
         CreateGhost();
         MoveGhost(eventData.position);
+        if (buildController != null)
+        {
+            buildController.UpdateDragPreview(eventData.position, optionIndex);
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -62,10 +66,19 @@ public class TowerDragBuildItemUI : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
 
         MoveGhost(eventData.position);
+        if (buildController != null)
+        {
+            buildController.UpdateDragPreview(eventData.position, optionIndex);
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (buildController != null)
+        {
+            buildController.HideRangeIndicator();
+        }
+
         if (activeGhost != null)
         {
             Destroy(activeGhost.gameObject);

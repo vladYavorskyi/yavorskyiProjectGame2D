@@ -21,17 +21,17 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private BaseHealth baseHealth;
     [SerializeField] private GameEconomy economy;
     [SerializeField] private int totalRounds = 10;
-    [SerializeField] private int orcUnlockRound = 3;
+    [SerializeField] private int orcUnlockRound = 2;
     [SerializeField] private int ghostUnlockRound = 5;
     [SerializeField] private int startAttackBudget = 200;
-    [SerializeField] private int attackBudgetGrowthPerRound = 35;
-    [SerializeField] private float earlyRoundBudgetScale = 0.6f;
+    [SerializeField] private int attackBudgetGrowthPerRound = 40;
+    [SerializeField] private float earlyRoundBudgetScale = 0.8f;
     [SerializeField] private float lateRoundBudgetScale = 1f;
     [SerializeField] private int maxEnemiesPerWave = 50;
     [SerializeField] private int startWaveEnemyLimit = 12;
     [SerializeField] private int endWaveEnemyLimit = 50;
-    [SerializeField] private float earlyMinSpawnInterval = 1.15f;
-    [SerializeField] private float earlyMaxSpawnInterval = 1.45f;
+    [SerializeField] private float earlyMinSpawnInterval = 0.8f;
+    [SerializeField] private float earlyMaxSpawnInterval = 1.2f;
     [SerializeField] private float minSpawnInterval = 0.8f;
     [SerializeField] private float maxSpawnInterval = 1.2f;
     [SerializeField] private float preparationDuration = 6.0f;
@@ -114,17 +114,17 @@ public class EnemySpawner : MonoBehaviour
     public void ApplyProgressiveWavePreset()
     {
         totalRounds = 10;
-        orcUnlockRound = 3;
+        orcUnlockRound = 2;
         ghostUnlockRound = 5;
         startAttackBudget = 200;
-        attackBudgetGrowthPerRound = 35;
-        earlyRoundBudgetScale = 0.6f;
+        attackBudgetGrowthPerRound = 40;
+        earlyRoundBudgetScale = 0.8f;
         lateRoundBudgetScale = 1f;
         maxEnemiesPerWave = 50;
         startWaveEnemyLimit = 12;
         endWaveEnemyLimit = 50;
-        earlyMinSpawnInterval = 1.15f;
-        earlyMaxSpawnInterval = 1.45f;
+        earlyMinSpawnInterval = 0.8f;
+        earlyMaxSpawnInterval = 1.2f;
         minSpawnInterval = 0.8f;
         maxSpawnInterval = 1.2f;
         preparationDuration = 8f;

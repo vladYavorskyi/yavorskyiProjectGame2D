@@ -28,6 +28,7 @@ public class TowerBuildController : MonoBehaviour
     private readonly HashSet<Vector2Int> occupiedCells = new();
     private readonly HashSet<Vector2Int> blockedPathCells = new();
     private bool blockBuildUntilMouseRelease;
+    private LineRenderer rangeIndicatorRenderer;
 
     private void Awake()
     {
@@ -168,6 +169,14 @@ public class TowerBuildController : MonoBehaviour
         return option != null && option.towerData != null && economy.CurrentGold >= option.towerData.cost;
     }
 
+    public bool IsTowerUnlocked(int index)
+    {
+        TowerBuildOption option = GetBuildOption(index);
+        if (option == null || option.towerData == null) return false;
+        if (enemySpawner == null) return true;
+        return enemySpawner.CurrentRound >= option.towerData.unlockRound;
+    }
+
     public bool TryBuildAtScreenPosition(Vector2 screenPosition, int optionIndex)
     {
         if (!CanBuildInCurrentPhase())
@@ -206,6 +215,12 @@ public class TowerBuildController : MonoBehaviour
         if (occupiedCells.Contains(cell))
         {
             Debug.Log("Cell is already occupied.");
+            return false;
+        }
+
+        if (!IsTowerUnlocked(optionIndex))
+        {
+            Debug.Log("Tower is locked.");
             return false;
         }
 
@@ -368,6 +383,65 @@ public class TowerBuildController : MonoBehaviour
     private bool IsInBounds(Vector2Int cell)
     {
         return cell.x >= 0 && cell.y >= 0 && cell.x < gridSize.x && cell.y < gridSize.y;
+    }
+
+    private void SetupRangeIndicator()
+    {
+        GameObject go = new GameObject("RangeIndicator");
+        rangeIndicatorRenderer = go.AddComponent<LineRenderer>();
+        rangeIndicatorRenderer.startWidth = 0.05f;
+        rangeIndicatorRenderer.endWidth = 0.05f;
+        rangeIndicatorRenderer.loop = true;
+        rangeIndicatorRenderer.useWorldSpace = true;
+        rangeIndicatorRenderer.positionCount = 60;
+        
+        Material mat = new Material(Shader.Find("Sprites/Default"));
+        mat.color = new Color(1f, 1f, 1f, 0.35f);
+        rangeIndicatorRenderer.material = mat;
+        rangeIndicatorRenderer.sortingOrder = 30;
+        
+        go.SetActive(false);
+    }
+
+    public void ShowRangeIndicator(Vector3 center, float radius)
+    {
+        if (rangeIndicatorRenderer == null) SetupRangeIndicator();
+        
+        rangeIndicatorRenderer.gameObject.SetActive(true);
+        float angle = 0f;
+        for (int i = 0; i < 60; i++)
+        {
+            float x = Mathf.Cos(Mathf.Deg2Rad * angle) * radius;
+            float y = Mathf.Sin(Mathf.Deg2Rad * angle) * radius;
+            rangeIndicatorRenderer.SetPosition(i, center + new Vector3(x, y, 0));
+            angle += (360f / 60);
+        }
+    }
+
+    public void HideRangeIndicator()
+    {
+        if (rangeIndicatorRenderer != null)
+        {
+            rangeIndicatorRenderer.gameObject.SetActive(false);
+        }
+    }
+
+    public void UpdateDragPreview(Vector2 screenPosition, int optionIndex)
+    {
+        TowerBuildOption option = GetBuildOption(optionIndex);
+        if (option == null || option.towerData == null || mainCamera == null)
+        {
+            HideRangeIndicator();
+            return;
+        }
+        
+        Vector3 world = mainCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0f));
+        world.z = 0f;
+        
+        Vector2Int cell = WorldToCell(world);
+        Vector3 buildPos = CellToWorld(cell);
+        
+        ShowRangeIndicator(buildPos, option.towerData.range);
     }
 
     private void OnDrawGizmosSelected()

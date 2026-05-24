@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: OrcData
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyType: 1
-  maxHealth: 35
+  maxHealth: 60
   moveSpeed: 1.4
   attackCost: 25
-  rewardGold: 14
+  rewardGold: 12
+  damageToBase: 3
   immuneToSlow: 0

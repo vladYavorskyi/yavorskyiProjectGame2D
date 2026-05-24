@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class EnemyMover : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 2.5f;
-    [SerializeField] private int damageToBase = 1;
+    private int damageToBase = 1;
     [Header("Visuals")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Sprite goblinSprite;
@@ -61,6 +61,7 @@ public class EnemyMover : MonoBehaviour
         enemyPool = pool;
         targetWaypointIndex = 0;
         baseMoveSpeed = data != null ? Mathf.Max(0.1f, data.moveSpeed) : moveSpeed;
+        damageToBase = data != null ? data.damageToBase : 1;
         currentMoveSpeed = baseMoveSpeed;
         slowTimer = 0f;
         ImmuneToSlow = data != null && (data.immuneToSlow || data.enemyType == EnemyType.Ghost);

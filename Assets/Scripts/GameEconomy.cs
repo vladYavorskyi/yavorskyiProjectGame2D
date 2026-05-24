@@ -3,7 +3,7 @@ using System;
 
 public class GameEconomy : MonoBehaviour
 {
-    [SerializeField] private int startGold = 300;
+    [SerializeField] private int startGold = 350;
 
     public event Action<int> GoldChanged;
 

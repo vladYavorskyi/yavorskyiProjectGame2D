@@ -12,6 +12,7 @@ public enum TowerType
 public class TowerData : ScriptableObject
 {
     public TowerType towerType;
+    public int unlockRound = 1;
     public int cost = 100;
     public float range = 2.5f;
     public float attacksPerSecond = 1f;

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FreezerData
   m_EditorClassIdentifier: Assembly-CSharp::TowerData
   towerType: 2
+  unlockRound: 5
   cost: 120
   range: 2.7
   attacksPerSecond: 1

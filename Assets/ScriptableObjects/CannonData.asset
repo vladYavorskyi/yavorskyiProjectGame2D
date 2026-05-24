@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: CannonData
   m_EditorClassIdentifier: Assembly-CSharp::TowerData
   towerType: 3
+  unlockRound: 7
   cost: 200
   range: 6.5
-  attacksPerSecond: 0.45
+  attacksPerSecond: 0.4
   projectileSpeed: 8
-  damage: 26
+  damage: 25
   splashRadius: 0
   slowMultiplier: 0.7
   slowDuration: 1.5

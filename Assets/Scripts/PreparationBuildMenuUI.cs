@@ -192,21 +192,22 @@ public class PreparationBuildMenuUI : MonoBehaviour
 
             TowerBuildOption option = i < optionCount ? buildController.GetBuildOption(i) : null;
             bool valid = option != null && option.towerData != null;
+            bool isUnlocked = buildController != null && buildController.IsTowerUnlocked(i);
 
             if (entry.label != null)
             {
-                entry.label.text = BuildLabel(option, i, valid, selected == i);
+                entry.label.text = BuildLabel(option, i, valid, selected == i, isUnlocked);
             }
 
             if (entry.button != null)
             {
                 bool enoughGold = valid && currentGold >= option.towerData.cost;
-                entry.button.interactable = valid && canBuild && enoughGold;
+                entry.button.interactable = valid && canBuild && enoughGold && isUnlocked;
             }
         }
     }
 
-    private string BuildLabel(TowerBuildOption option, int index, bool valid, bool selected)
+    private string BuildLabel(TowerBuildOption option, int index, bool valid, bool selected, bool isUnlocked)
     {
         if (!valid)
         {
@@ -214,6 +215,10 @@ public class PreparationBuildMenuUI : MonoBehaviour
         }
 
         TowerData data = option.towerData;
+        if (!isUnlocked)
+        {
+            return $"[Locked R{data.unlockRound}]";
+        }
         string marker = selected ? "> " : string.Empty;
         return $"{marker}{data.towerType} ({data.cost}g)";
     }
@@ -292,6 +297,9 @@ public class PreparationBuildMenuUI : MonoBehaviour
             _ => string.Empty
         };
 
-        return $"{data.towerType}\nCost: {data.cost}g\nDamage: {data.damage}\nRate: {data.attacksPerSecond:0.00}/s\nRange: {data.range:0.0}\nProjectile Speed: {data.projectileSpeed:0.0}\n{role}{extra}";
+        bool isUnlocked = buildController != null && enemySpawner != null ? enemySpawner.CurrentRound >= data.unlockRound : true;
+        string unlockStatus = isUnlocked ? "" : $"\n<color=red>LOCKED UNTIL ROUND {data.unlockRound}</color>";
+
+        return $"{data.towerType}\nCost: {data.cost}g\nDamage: {data.damage}\nRate: {data.attacksPerSecond:0.00}/s\nRange: {data.range:0.0}\nProjectile Speed: {data.projectileSpeed:0.0}\n{role}{extra}{unlockStatus}";
     }
 }

@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: GhostData
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyType: 2
-  maxHealth: 20
+  maxHealth: 30
   moveSpeed: 2.1
   attackCost: 20
-  rewardGold: 10
+  rewardGold: 9
+  damageToBase: 2
   immuneToSlow: 1

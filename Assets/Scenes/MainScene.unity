@@ -476,10 +476,10 @@ MonoBehaviour:
   baseHealth: {fileID: 1308553394}
   economy: {fileID: 1980831008}
   totalRounds: 10
-  orcUnlockRound: 2
-  ghostUnlockRound: 1
+  orcUnlockRound: 3
+  ghostUnlockRound: 5
   startAttackBudget: 200
-  attackBudgetGrowthPerRound: 40
+  attackBudgetGrowthPerRound: 35
   earlyRoundBudgetScale: 0.6
   lateRoundBudgetScale: 1
   maxEnemiesPerWave: 50
@@ -488,9 +488,10 @@ MonoBehaviour:
   earlyMinSpawnInterval: 1.15
   earlyMaxSpawnInterval: 1.45
   minSpawnInterval: 0.8
-  maxSpawnInterval: 1
-  preparationDuration: 10
+  maxSpawnInterval: 1.2
+  preparationDuration: 8
   timeBetweenRounds: 2
+  extremeTestStartGold: 20000
 --- !u!4 &229117217
 Transform:
   m_ObjectHideFlags: 0
@@ -4902,7 +4903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebf6334eb73d22354afde7c7758edee4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameEconomy
-  startGold: 3000
+  startGold: 350
 --- !u!114 &1980831009
 MonoBehaviour:
   m_ObjectHideFlags: 0

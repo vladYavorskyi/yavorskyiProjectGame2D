@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: GoblinData
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyType: 0
-  maxHealth: 18
+  maxHealth: 15
   moveSpeed: 2.8
   attackCost: 10
-  rewardGold: 3
+  rewardGold: 4
+  damageToBase: 1
   immuneToSlow: 0

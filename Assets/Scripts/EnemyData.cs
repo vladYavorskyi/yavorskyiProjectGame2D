@@ -15,5 +15,6 @@ public class EnemyData : ScriptableObject
     public float moveSpeed = 2f;
     public int attackCost = 10;
     public int rewardGold = 5;
+    public int damageToBase = 1;
     public bool immuneToSlow = false;
 }
